@@ -1,0 +1,26 @@
+scenario: "pyk"
+
+model:
+    path: "iJN1463.xml"
+    biomass: "BIOMASS_KT2440_WT3"
+    target-genes:
+    - "PP_1362"
+    - "PP_4301"
+    annotations:
+    - "ncbigene"
+
+sampling:
+    samples: 10000
+    thinning: 100
+    processes: 4 # Number of samples should be a multiple of the number of processes
+    lb-biomass: 0.1
+    lb-target: 0.05
+
+    # PREFIX is determined by scenario + lb-biomass + lb-target
+
+enrichment:
+    key: "gene_id"
+    organism: "ppu"
+    quantile: 0.1
+
+    # quantile can be adjusted to repeat enrichment analysis

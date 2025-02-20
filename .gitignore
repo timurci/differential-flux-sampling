@@ -1,0 +1,9 @@
+__pycache__/
+.ipynb_checkpoints/
+*.csv
+*.parquet
+*.xml
+*.mat
+*.png
+*.pdf
+*.html
