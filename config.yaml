@@ -21,6 +21,5 @@ sampling:
 enrichment:
     key: "gene_id"
     organism: "ppu"
-    quantile: 0.1
-
-    # quantile can be adjusted to repeat enrichment analysis
+    repeats: 10
+    repeat-threshold: .95

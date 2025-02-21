@@ -1,5 +1,6 @@
 __pycache__/
 .ipynb_checkpoints/
+.snakemake/
 *.csv
 *.parquet
 *.xml
@@ -7,3 +8,5 @@ __pycache__/
 *.png
 *.pdf
 *.html
+*.log
+.Rhistory

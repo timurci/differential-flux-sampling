@@ -24,7 +24,7 @@ def _add_annotation(zscore, model, annotations):
         for g in rxn.genes:
             rxn_gene_id.append(g.id)
             for annot in rxn_annotations:
-                rxn_annotations[annot] = g.annotation.get(annot, '')
+                rxn_annotations[annot].append(g.annotation.get(annot, ''))
 
         zscore.loc[index, 'rxn_name'] = rxn.name
         zscore.loc[index, 'gene_id'] = ";".join(rxn_gene_id)
@@ -83,7 +83,7 @@ def main():
 
     _add_rank(zscore)
 
-    zscore.to_csv(args.output)
+    zscore.to_csv(args.output, index_label="rxn_id")
 
     # Plot z-score distribution
     base_dir = os.path.dirname(args.output)

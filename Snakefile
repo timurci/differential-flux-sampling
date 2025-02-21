@@ -11,7 +11,8 @@ PREFIX=".".join([
 
 PATH_ENRICH="enrichment/" + ".".join([
         config["enrichment"]["organism"],
-        "q" + fformat(config["enrichment"]["quantile"])
+        "r" + str(config["enrichment"]["repeats"]),
+        "t" + fformat(config["enrichment"]["repeat-threshold"])
 ])
  
 rule all:
@@ -81,7 +82,8 @@ rule enrichment:
             "{input}",
             "--key-column {config[enrichment][key]}",
             "--organism {config[enrichment][organism]}",
-            "--quantile {config[enrichment][quantile]}",
+            "--repeats {config[enrichment][repeats]}",
+            "--repeat-threshold {config[enrichment][repeat-threshold]}",
             "--output " f"{PREFIX}/" f"{PATH_ENRICH}.*.csv",
-            ">> {log} 2>&1"
+            "> {log.stdout} 2> {log.stderr}"
         ])
