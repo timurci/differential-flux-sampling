@@ -24,13 +24,13 @@ parser$add_argument('--adjustment-method', default = "fdr",
                     choices = c('holm', 'hochberg', 'hommel', 'bonferroni',
                                 'BH', 'BY', 'fdr', 'none'))
 
-parser$add_argument('-o', '--output', required = T)
+parser$add_argument('-o', '--output-dir', required = T)
 
 cmd.args = NULL
 
-do.debug = F
+do.debug = T
 test.args = c('~/workspace/differential-flux-sampling/pyk.b10.r5/rank/zscore.csv',
-              '--organism', 'ppu', '-k', 'gene_id', '--output', 'enrichment.*.csv',
+              '--organism', 'ppu', '-k', 'gene_id', '--output-dir', 'pyk.b10.r5/enrichment',
               '--repeats', '10')
 
 if (do.debug) {

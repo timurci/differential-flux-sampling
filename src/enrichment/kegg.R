@@ -1,4 +1,12 @@
-# setwd('~/workspace/differential-flux-sampling/')
+# 1. Group genes into "total", "positive", and "negative" based on their z-score
+# 2. Remove duplicate genes with lower ranks
+# 3. Visualize enrichment results
+#
+# Note: A gene can take part in the activity of multiple reactions.
+#       It is possible to observe a positive flux shift in reaction X
+#       and a negative flux shift in reaction Y associated with the same gene.
+
+# ==== Parse Command-line Arguments ====
 
 cmd.args = NULL
 source('src/enrichment/enrichment_args.R')
@@ -10,19 +18,13 @@ library(tidyr)
 
 scores = read.csv(cmd.args$zscore_path)
 
-# 1. Threshold is applied to filter low-rank reactions.
-# 2. Genes are grouped into "total", "positive", and "negative" based on z-score.
-# 3. First occurrence (higher ranking) genes are selected in case of duplicates.
-#
-# Note: A gene can take part in the activity of multiple reactions.
-#       It is possible to observe a positive flux shift in reaction X
-#       and a negative flux shift in reaction Y associated with the same gene.
+# ==== Extract Gene Scores ====
 
 extract_genes = function(scores, key, threshold, sep = ";") {
   # Expand gene key column
   
   genes = separate_longer_delim(scores, key, delim = sep)
-  genes = genes[genes[key] != '', ]
+  genes = genes[genes[, key] != '', ]
   
   genes
 }
@@ -51,10 +53,7 @@ g.total = convert_genes(genes, cmd.args$key_column)
 g.positive = convert_genes(genes, cmd.args$key_column, method = "positive")
 g.negative = convert_genes(genes, cmd.args$key_column, method = "negative")
 
-
-en.total.count = c()
-en.positive.count = c()
-en.negative.count = c()
+# ==== Perform Enrichment Analysis ====
 
 update_count = function(counter, terms) {
   for (i in 1:length(terms)) {
@@ -67,6 +66,10 @@ update_count = function(counter, terms) {
   }
   counter
 }
+
+en.total.count = c()
+en.positive.count = c()
+en.negative.count = c()
 
 for (i in 1:cmd.args$repeats) {
   
@@ -107,6 +110,11 @@ for (i in 1:cmd.args$repeats) {
   
 }
 
+en.total@result$Description = sub(" - .*", '', en.total@result$Description)
+en.positive@result$Description = sub(" - .*", '', en.positive@result$Description)
+en.negative@result$Description = sub(" - .*", '', en.negative@result$Description)
+
+
 en.total.select = names(en.total.count)[
   en.total.count >= max(en.total.count) * cmd.args$repeat_threshold
 ]
@@ -125,6 +133,23 @@ en.negative.select = names(en.negative.count)[
 result.negative = subset(en.negative@result,
                          en.negative.select %in% en.negative@result$ID)
 
-write.csv(result.total, file = sub('\\*', 'total', cmd.args$output))
-write.csv(result.positive, file = sub('\\*', 'positive', cmd.args$output))
-write.csv(result.negative, file = sub('\\*', 'negative', cmd.args$output))
+# ==== Export Results ====
+
+write.csv(result.total, file = file.path(cmd.args$output_dir, 'total.csv'))
+write.csv(result.positive, file = file.path(cmd.args$output_dir, 'positive.csv'))
+write.csv(result.negative, file = file.path(cmd.args$output_dir, 'negative.csv'))
+
+source('src/enrichment/visualize.R')
+
+results   = list(total = en.total, positive = en.positive, negative = en.negative)
+gene.data = list(total = g.total,  positive = g.positive,  negative = g.negative)
+
+visualize.enrichment(results, gene.data, cmd.args$output_dir)
+
+pathway.limit = 10  # Maximum number of pathways for each group
+pathways = unique(c(rownames(result.total)[1:pathway.limit],
+                    rownames(result.positive)[1:pathway.limit],
+                    rownames(result.negative)[1:pathway.limit]))
+pathways = pathways[!is.na(pathways)]
+
+visualize.pathways(g.total, pathways, cmd.args$organism, cmd.args$output_dir)

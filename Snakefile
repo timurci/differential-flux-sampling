@@ -9,12 +9,6 @@ PREFIX=".".join([
         "r" + fformat(config["sampling"]["lb-target"])
 ])
 
-PATH_ENRICH="enrichment/" + ".".join([
-        config["enrichment"]["organism"],
-        "r" + str(config["enrichment"]["repeats"]),
-        "t" + fformat(config["enrichment"]["repeat-threshold"])
-])
- 
 rule all:
     input:
         f"{PREFIX}/sampling/WT.parquet",
@@ -70,12 +64,16 @@ rule enrichment:
     input:
         f"{PREFIX}/" "rank/zscore.csv"
     output:
-        tot=f"{PREFIX}/" f"{PATH_ENRICH}.total.csv",
-        pos=f"{PREFIX}/" f"{PATH_ENRICH}.positive.csv",
-        neg=f"{PREFIX}/" f"{PATH_ENRICH}.negative.csv"
+        f"{PREFIX}/" "enrichment/dotplot.png",
+        f"{PREFIX}/" "enrichment/cnetplot.png",
+        f"{PREFIX}/" "enrichment/heatplot.png",
+        f"{PREFIX}/" "enrichment/emapplot.png",
+        tot=f"{PREFIX}/" "enrichment/total.csv",
+        pos=f"{PREFIX}/" "enrichment/positive.csv",
+        neg=f"{PREFIX}/" "enrichment/negative.csv"
     log:
-        stdout=f"{PREFIX}/" f"{PATH_ENRICH}.stdout.log",
-        stderr=f"{PREFIX}/" f"{PATH_ENRICH}.stderr.log"
+        stdout=f"{PREFIX}/" f"enrichment/kegg.stdout.log",
+        stderr=f"{PREFIX}/" f"enrichment/kegg.stderr.log"
     shell:
         " ".join([
             "Rscript --vanilla src/enrichment/kegg.R",
@@ -84,6 +82,6 @@ rule enrichment:
             "--organism {config[enrichment][organism]}",
             "--repeats {config[enrichment][repeats]}",
             "--repeat-threshold {config[enrichment][repeat-threshold]}",
-            "--output " f"{PREFIX}/" f"{PATH_ENRICH}.*.csv",
+            "--output-dir " f"{PREFIX}/" f"enrichment",
             "> {log.stdout} 2> {log.stderr}"
         ])
